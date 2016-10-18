@@ -34,7 +34,7 @@
 <div id="#b">B</div>
 ```
 
-<iframe src="https://sergeche.github.io/gpu-article-assets/example1.html#ru" height="300" frameborder="no" allowtransparency="true" style="width: 100%;"></iframe>
+<iframe src="https://sergeche.github.io/gpu-article-assets/examples/example1.html#ru" height="300" frameborder="no" allowtransparency="true" style="width: 100%;"></iframe>
 
 Мы решили анимировать перемещение слоя `A` через CSS-свойство `left` c помощью CSS Transitions или CSS Animations.
 
@@ -66,7 +66,7 @@
 <div id="#b">B</div>
 ```
 
-<iframe src="https://sergeche.github.io/gpu-article-assets/example1.html#ru:.a:anim-left" height="300" frameborder="no" allowtransparency="true" style="width: 100%;"></iframe>
+<iframe src="https://sergeche.github.io/gpu-article-assets/examples/example1.html#ru:.a:anim-left" height="300" frameborder="no" allowtransparency="true" style="width: 100%;"></iframe>
 
 В этом случае на каждый кадр анимации браузер со стороны CPU пересчитывает геометрию элементов (reflow), отрисовывает новое изображение с актуальным состоянием страницы (repaint), так же отправляет его на GPU, после чего оно отображается на экране. Мы знаем, что repaint — довольно дорогая операция, однако все современные браузеры достаточно умны, чтобы перерисовывать не всё изображение целиком, а только изменившиеся части. И делают они это достаточно быстро, но анимациям всё равно не хватает плавности.
 
@@ -110,7 +110,7 @@
 
 Обратите внимание на код. Мы декларативно описали всю анимацию: её начало, конец, длительность и т.д. А это позволяет браузеру ещё до начала анимации определить, какие именно CSS-свойства элемента будут меняться. Увидев, что среди этих свойств нет тех, что влияют на reflow/repaint, браузер может применить оптимизацию с композицией: нарисовать два изображения и передать их GPU.
 
-<iframe src="https://sergeche.github.io/gpu-article-assets/example2.html#ru:.a:anim-translate" height="300" frameborder="no" allowtransparency="true" style="width: 100%;"></iframe>
+<iframe src="https://sergeche.github.io/gpu-article-assets/examples/example2.html#ru:.a:anim-translate" height="300" frameborder="no" allowtransparency="true" style="width: 100%;"></iframe>
 
 Преимущества такой оптимизации:
 
@@ -137,7 +137,7 @@
 Таким образом, каждый раз, когда вы добавляете магическое `transform: translateZ(0)` элементу, вы запускаете весь это процесс. Вы уже знаете, что repaint является достаточно ресурсоёмкой задачей. Но в данном случае всё ещё хуже: довольно часто браузер не может применить инкрементальный repaint и перерисовать только изменившуюся часть. Он должен заново отрисовать те части, которые были скрыты новым слоем:
 
 
-<iframe src="https://sergeche.github.io/gpu-article-assets/before-after-compositing.html#ru" height="270" frameborder="no" allowtransparency="true" style="width: 100%;"></iframe>
+<iframe src="https://sergeche.github.io/gpu-article-assets/examples/before-after-compositing.html#ru" height="270" frameborder="no" allowtransparency="true" style="width: 100%;"></iframe>
 
 ## Неявная композиция
 
@@ -145,7 +145,7 @@
 
 А теперь поменяем задачу: будем анимировать элемент `B`…
 
-<iframe src="https://sergeche.github.io/gpu-article-assets/example3.html#ru:.b:anim-translate" height="300" frameborder="no" allowtransparency="true" style="width: 100%;"></iframe>
+<iframe src="https://sergeche.github.io/gpu-article-assets/examples/example3.html#ru:.b:anim-translate" height="300" frameborder="no" allowtransparency="true" style="width: 100%;"></iframe>
 
 …и у нас возникает логическая проблема. Элемент `B` должен быть на отдельном композитном слое, финальная композиция изображения, которое увидит пользователь, происходит на GPU. Но элемент `A`, который мы вообще никак не трогаем, визуально должен находиться поверх элемента `B`.
 
@@ -153,7 +153,7 @@
 
 Совершенно верно: он перенесёт элемент `A` на отдельный композитный слой! Добавив тем самым ещё один тяжёлый repaint:
 
-<iframe src="https://sergeche.github.io/gpu-article-assets/example4.html#ru:.b:anim-translate" height="300" frameborder="no" allowtransparency="true" style="width: 100%;"></iframe>
+<iframe src="https://sergeche.github.io/gpu-article-assets/examples/example4.html#ru:.b:anim-translate" height="300" frameborder="no" allowtransparency="true" style="width: 100%;"></iframe>
 
 > Это называется *неявная композиция*: один или несколько не-композитных элементов, которые по `z-index` находятся выше композитного элемента, также становятся композитными, то есть отрисовываются в отдельное изображение, которое затем отправляется на GPU.
 
@@ -178,7 +178,7 @@
 
 Сколько весит изображение одного слоя? Давайте рассмотрим пример. Попробуйте угадать размер обычного прямоугольника, размером 320×240, залитого сплошным цветом #ff0000.
 
-<iframe src="https://sergeche.github.io/gpu-article-assets/rect.html" height="270" frameborder="no" allowtransparency="true" style="width: 100%;"></iframe>
+<iframe src="https://sergeche.github.io/gpu-article-assets/examples/rect.html" height="270" frameborder="no" allowtransparency="true" style="width: 100%;"></iframe>
 
 Обычно веб-разработчики думают так: «это одноцветное изображение… сохраню-ка я его в PNG и проверю размер, должен быть меньше килобайта». И будут правы: это изображение действительно весит всего 104 байта в PNG.
 
@@ -192,7 +192,7 @@
 
 Причём, довольно часто эта дополнительная память расходуется впустую, просто для отображения точного такого же результата:
 
-<iframe src="https://sergeche.github.io/gpu-article-assets/example5.html#ru" height="620" frameborder="no" allowtransparency="true" style="width: 100%;"></iframe>
+<iframe src="https://sergeche.github.io/gpu-article-assets/examples/example5.html#ru" height="620" frameborder="no" allowtransparency="true" style="width: 100%;"></iframe>
 
 И если для десктопных клиентов это ещё не так сильно заметно, то для мобильных устройств эта проблема стоит особенно остро. Во-первых, практически на всех современных устройствах используются экраны c высокой плотностью пикселей: умножаем изображения слоёв ещё на 2–3. Во-вторых, на таких устройствах *довольно мало памяти*, по сравнению с десктопами. Например, у ещё-не-такого-старого iPhone 6 всего 1 ГБ памяти, причём она общая для RAM и VRAM (память для GPU). Учитывая, что в лучшем случае треть этой памяти будет использоваться самой системой и фоновыми процессами, ещё треть — на браузер и текущую страницу (и это при условии, что вы не пользуетесь десятком фрэймворков и очень сильно всё оптимизируете), то для GPU-спецэффектов останется порядка 200—300 МБ. Причем, iPhone 6 относится к дорогим high-end устройствам, на более доступных устройствах памяти гораздо меньше.
 
@@ -330,7 +330,7 @@
 
 Посмотрите на картинку ниже. Видите ли вы разницу между ними?
 
-<iframe src="https://sergeche.github.io/gpu-article-assets/layer-size.html" height="130" frameborder="no" allowtransparency="true" style="width: 100%;"></iframe>
+<iframe src="https://sergeche.github.io/gpu-article-assets/examples/layer-size.html" height="130" frameborder="no" allowtransparency="true" style="width: 100%;"></iframe>
 
 Это два *визуально идентичных* композитных слоя, однако первый весит 40 000 байт (39 КБ), а второй — в 100 раз меньше, всего 400 байт. Почему? Посмотрите на код этих слоёв:
 
@@ -372,7 +372,7 @@
 
 На самом деле у CSS-анимаций есть одно очень важное преимущество: *они полностью работают на GPU*. Так как вы *декларативно* объявляете, где анимация начнётся и где закончится, браузер может предварительно подготовить весь набор необходимых инструкций и отправить их на GPU. В случае *императивного* JS единственное, что может знать браузер — это состояние текущего кадра. Для плавной анимации мы должны как минимум 60 раз в секунду в основном потоке браузера (а JS работает именно в нём) высчитывать данные для нового кадра и пересылать их на GPU, где этот кадр отрисуется. Помимо того, что  эти расчёты и отправка данных работают намного медленнее, чем CSS-анимации, они ещё зависят и от загруженности основного потока:
 
-<iframe src="https://sergeche.github.io/gpu-article-assets/js-vs-css.html" height="180" frameborder="no" allowtransparency="true" style="width: 100%;"></iframe>
+<iframe src="https://sergeche.github.io/gpu-article-assets/examples/js-vs-css.html" height="180" frameborder="no" allowtransparency="true" style="width: 100%;"></iframe>
 
 На иллюстрации выше показано, что будет, если в основном потоке на JS будет выполнятся интенсивная операция. На CSS-анимации это никак не повлияет, так как новый кадр полностью считается в отдельном потоке (и даже на отдельном устройстве), в случае с JS придётся дождаться завершения тяжёлой операции и только после этого посчитать новый кадр.
 

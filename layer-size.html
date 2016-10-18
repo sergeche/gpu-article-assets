@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<meta http-equiv="X-UA-Compatible" content="ie=edge" />
+	<title>Layer size test</title>
+	<style>
+	html, body {
+		padding: 0;
+		margin: 0;
+		font-family: sans-serif;
+		background: #fff;
+		color: #000;
+		font-size: 12px;
+	}
+
+	.layer {
+		color: red;
+		background-color: currentColor;
+		position: absolute;
+		will-change: transform;
+		overflow: hidden;
+	}
+
+	.layer::before {
+		content: '.'; /* Force Safari to de-optimize layer rendering */
+		font-size: 1px;
+	}
+
+	.a {
+		width: 100px;
+		height: 100px;
+	}
+
+	.b {
+		left: 120px;
+		width: 10px;
+		height: 10px;
+		transform: scale(10);
+		transform-origin: 0 0;
+	}
+
+	.label {
+		width: 100px;
+		text-align: center;
+		position: absolute;
+		top: 110px;
+	}
+	</style>
+</head>
+<body>
+	<div class="layer a"></div>
+	<div class="layer b"></div>
+	<div class="label">39 KB</div>
+	<div class="label" style="left: 120px;">400 B</div>
+</body>
+</html>

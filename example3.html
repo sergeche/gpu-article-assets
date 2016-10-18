@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>Example 1</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <div class="viewport viewport-3d">
+        <div class="scene3d">
+            <div class="layer layer-comp1">
+                <div class="a"></div>
+            </div>
+            <div class="layer layer-comp2">
+                <div class="b"></div>
+            </div>
+            <div class="layer">
+                <div class="bg"></div>
+            </div>
+        </div>
+        <div class="label">Browser layers</div>
+    </div>
+
+    <div class="viewport viewport-3d">
+        <div class="scene3d">
+            <div class="question"></div>
+        </div>
+        <div class="label">GPU layers</div>
+    </div>
+
+    <div class="viewport viewport-flat">
+        <div class="a"></div>
+        <div class="b"></div>
+        <div class="bg"></div>
+        <div class="label">Display</div>
+    </div>
+    <script src="apply-anim.js"></script>
+</body>
+</html>

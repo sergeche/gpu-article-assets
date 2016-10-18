@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>Example 4</title>
+    <link rel="stylesheet" href="style.css" />
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+        <title>Before/After compositing</title>
+        <link rel="stylesheet" href="style.css" />
+        <style>
+        .comment {
+            z-index: 2;
+            position: relative;
+            left: 280px;
+            width: auto;
+            display: block;
+            margin: 20px 0;
+            width: 200px;
+            text-align: center;
+        }
+        .arrow {
+            width: 13px;
+            left: 50%;
+        }
+
+        .arrow.to-top {
+            top: 0px;
+        }
+
+        .arrow.to-bottom {
+            top: 0;
+            margin-left: 1px;
+            top: 14px;
+        }
+
+        .block2 {
+            left: 20px;
+            top: 20px;
+        }
+
+        .block3 {
+            left: 50px;
+            top: 60px;
+        }
+
+        .block4 {
+            left: 10px;
+            top: 120px;
+        }
+
+        .layer1 {
+            z-index: 4;
+            transform: translateZ(60px);
+        }
+
+        .layer2 {
+            z-index: 3;
+            transform: translateZ(45px);
+        }
+
+        .layer3 {
+            z-index: 2;
+            transform: translateZ(30px);
+        }
+
+        .layer4 {
+            z-index: 1;
+            transform: translateZ(15px);
+        }
+
+        .label {
+            white-space: nowrap;
+            top: 200px;
+            line-height: 1.5;
+        }
+        </style>
+    </head>
+</head>
+<body>
+    <div class="row">
+        <div class="viewport viewport-3d">
+            <div class="scene3d">
+                <div class="layer">
+                    <div class="block block1"></div>
+                    <div class="block block2"></div>
+                    <div class="block block3"></div>
+                    <div class="block block4"></div>
+                    <div class="bg"></div>
+                </div>
+            </div>
+            <div class="label">Без композиции:<br />200×270×4 = 216 000 байт</div>
+        </div>
+
+        <div class="viewport viewport-flat">
+            <div class="block block1"></div>
+            <div class="block block2"></div>
+            <div class="block block3"></div>
+            <div class="block block4"></div>
+            <div class="bg"></div>
+        </div>
+        <script src="apply-anim.js"></script>
+    </div>
+
+    <div class="comment">
+        <div class="arrow to-top"></div>
+        <div class="arrow to-bottom"></div>
+        идентичный результат
+    </div>
+
+    <div class="row">
+        <div class="viewport viewport-3d">
+            <div class="scene3d">
+                <div class="layer layer1">
+                    <div class="block block1"></div>
+                </div>
+                <div class="layer layer2">
+                    <div class="block block2"></div>
+                </div>
+                <div class="layer layer3">
+                    <div class="block block3"></div>
+                </div>
+                <div class="layer layer4">
+                    <div class="block block4"></div>
+                </div>
+                <div class="layer">
+                    <div class="bg"></div>
+                </div>
+            </div>
+            <div class="label">С композицией:<br />Фон: 200×270×4 = 216 000 байт<br />Элементы: 70×70×4 × 4 = 78 400 байт</div>
+        </div>
+
+        <div class="viewport viewport-flat">
+            <div class="block block1"></div>
+            <div class="block block2"></div>
+            <div class="block block3"></div>
+            <div class="block block4"></div>
+            <div class="bg"></div>
+        </div>
+        <script src="apply-anim.js"></script>
+    </div>
+</body>
+</html>

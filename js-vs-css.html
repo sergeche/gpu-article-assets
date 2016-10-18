@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<meta http-equiv="X-UA-Compatible" content="ie=edge" />
+	<title>JS animation vs. CSS animation</title>
+	<style>
+	html, body {
+		padding: 0;
+		margin: 0;
+		font-family: sans-serif;
+		font-size: 12px;
+		width: 550px;
+		text-align: center;
+	}
+
+	.a, .b {
+		width: 50px;
+		height: 50px;
+		line-height: 50px;
+		background: red;
+		margin-bottom: 10px;
+		text-align: center;
+		color: #fff;
+		will-change: transform;
+	}
+
+	.animate .a {
+		transition: transform 5s linear;
+	}
+
+	.status {
+		height: 1.4em;
+		line-height: 1.4;
+	}
+	</style>
+</head>
+<body>
+	<div class="a">CSS</div>
+	<div class="b">JS</div>
+	<div class="status"></div>
+	<button class="play" onclick="play()">Play</button>
+
+	<script>
+	function play() {
+		var btn = document.querySelector('.play');
+		var a = document.querySelector('.a');
+		var b = document.querySelector('.b');
+		var status = document.querySelector('.status');
+
+		if (btn.disabled) {
+			return;
+		}
+
+		btn.disabled = true;
+		var start = Date.now();
+		var distance = 500;
+		var duration = 5000; // 5 seconds
+
+		var animLoop = function() {
+			var now = Date.now();
+			var curDuration = Math.min(now - start, duration);
+			b.style.transform = 'translateX(' + (distance * (curDuration / duration)) + 'px)';
+
+			if (curDuration === duration) {
+				document.body.classList.remove('animate');
+				return setTimeout(function() {
+					a.style.transform = b.style.transform = 'none';
+					status.textContent = '';
+					btn.disabled = false;
+				}, 500);
+			} else {
+				requestAnimationFrame(animLoop);
+			}
+		};
+
+		var heavyJS = function(duration) {
+			var start = Date.now();
+			var prevText = status.textContent;
+			status.textContent = 'run heavy JS calc';
+			setTimeout(function() {
+				while (true) {
+					if (Date.now() - start >= duration) {
+						status.textContent = prevText;
+						break;
+					}
+				}
+			}, 5);
+		};
+
+		// begin animation
+		document.body.classList.add('animate');
+		a.style.transform = 'translateX(' + distance + 'px)';
+		requestAnimationFrame(animLoop);
+		status.textContent = 'animate';
+
+		// block UI thread 2 times
+		setTimeout(function() {
+			heavyJS(1000);
+		}, 1000);
+
+		setTimeout(function() {
+			heavyJS(700);
+		}, 3500);
+	}
+	</script>
+</body>
+</html>

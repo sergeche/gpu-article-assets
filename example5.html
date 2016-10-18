@@ -6,80 +6,73 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge" />
     <title>Example 4</title>
     <link rel="stylesheet" href="style.css" />
-    <head>
-        <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <meta http-equiv="X-UA-Compatible" content="ie=edge" />
-        <title>Before/After compositing</title>
-        <link rel="stylesheet" href="style.css" />
-        <style>
-        .comment {
-            z-index: 2;
-            position: relative;
-            left: 280px;
-            width: auto;
-            display: block;
-            margin: 20px 0;
-            width: 200px;
-            text-align: center;
-        }
-        .arrow {
-            width: 13px;
-            left: 50%;
-        }
+    <style>
+    .comment {
+        z-index: 2;
+        position: relative;
+        left: 280px;
+        width: auto;
+        display: block;
+        margin: 20px 0;
+        width: 200px;
+        text-align: center;
+    }
+    .arrow {
+        width: 13px;
+        left: 50%;
+    }
 
-        .arrow.to-top {
-            top: 0px;
-        }
+    .arrow.to-top {
+        top: 0px;
+    }
 
-        .arrow.to-bottom {
-            top: 0;
-            margin-left: 1px;
-            top: 14px;
-        }
+    .arrow.to-bottom {
+        top: 0;
+        margin-left: 1px;
+        top: 14px;
+    }
 
-        .block2 {
-            left: 20px;
-            top: 20px;
-        }
+    .block2 {
+        left: 20px;
+        top: 20px;
+    }
 
-        .block3 {
-            left: 50px;
-            top: 60px;
-        }
+    .block3 {
+        left: 50px;
+        top: 60px;
+    }
 
-        .block4 {
-            left: 10px;
-            top: 120px;
-        }
+    .block4 {
+        left: 10px;
+        top: 120px;
+    }
 
-        .layer1 {
-            z-index: 4;
-            transform: translateZ(60px);
-        }
+    .layer1 {
+        z-index: 4;
+        transform: translateZ(60px);
+    }
 
-        .layer2 {
-            z-index: 3;
-            transform: translateZ(45px);
-        }
+    .layer2 {
+        z-index: 3;
+        transform: translateZ(45px);
+    }
 
-        .layer3 {
-            z-index: 2;
-            transform: translateZ(30px);
-        }
+    .layer3 {
+        z-index: 2;
+        transform: translateZ(30px);
+    }
 
-        .layer4 {
-            z-index: 1;
-            transform: translateZ(15px);
-        }
+    .layer4 {
+        z-index: 1;
+        transform: translateZ(15px);
+    }
 
-        .label {
-            white-space: nowrap;
-            top: 200px;
-            line-height: 1.5;
-        }
-        </style>
-    </head>
+    .label {
+        white-space: nowrap;
+        top: 200px;
+        line-height: 1.5;
+    }
+    </style>
 </head>
 <body>
     <div class="row">
@@ -93,7 +86,10 @@
                     <div class="bg"></div>
                 </div>
             </div>
-            <div class="label">Без композиции:<br />200×270×4 = 216 000 байт</div>
+            <div class="label" data-ru="Без композиции:" data-en="No compositing">
+                <br />
+                200×270×4 = 216 000 <span class="text" data-ru="байт" data-en="bytes"></span>
+            </div>
         </div>
 
         <div class="viewport viewport-flat">
@@ -103,13 +99,12 @@
             <div class="block block4"></div>
             <div class="bg"></div>
         </div>
-        <script src="apply-anim.js"></script>
     </div>
 
     <div class="comment">
         <div class="arrow to-top"></div>
         <div class="arrow to-bottom"></div>
-        идентичный результат
+        <span class="text" data-ru="идентичный результат" data-en="identical result"></span>
     </div>
 
     <div class="row">
@@ -131,7 +126,11 @@
                     <div class="bg"></div>
                 </div>
             </div>
-            <div class="label">С композицией:<br />Фон: 200×270×4 = 216 000 байт<br />Элементы: 70×70×4 × 4 = 78 400 байт</div>
+            <div class="label" data-ru="С композицией:" data-en="With compositing">
+                <br />
+                <span class="text" data-ru="Фон:" data-en="Bg:"></span> 200×270×4 = 216 000 <span class="text" data-ru="байт" data-en="bytes"></span><br />
+                <span class="text" data-ru="Элементы:" data-en="Elements:"></span> 70×70×4 × 4 = 78 400 <span class="text" data-ru="байт" data-en="bytes"></span>
+            </div>
         </div>
 
         <div class="viewport viewport-flat">

@@ -108,6 +108,16 @@ html, body {
     margin-top: 10px;
 }
 
+:lang(en) .label::before,
+:lang(en) .text::before {
+    content: attr(data-en);
+}
+
+:lang(ru) .label::before,
+:lang(ru) .text::before {
+    content: attr(data-ru);
+}
+
 .arrow {
     height: 1px;
     background: currentColor;

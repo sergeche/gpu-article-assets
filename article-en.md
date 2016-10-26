@@ -157,3 +157,39 @@ Exactly! It will forcibly create a new compositing layer for element `A`. And ad
 <iframe src="https://sergeche.github.io/gpu-article-assets/examples/example4.html#.b:anim-translate" height="300" frameborder="no" allowtransparency="true" style="width: 100%;"></iframe>
 
 > It’s called *implicit compositing*: one or more non-composite elements that should appear above composite element by stacking order are also promoted to composite layers, e.g. painted into separate image which is then sent to GPU.
+
+You’ll stumble upon implicit composing much more often than you think: browser promotes element to compositing layer by many reasons. Here are just some of them:
+
+* 3D transform: `translate3d`, `translateZ` etc.
+* `<video>`, `<canvas>`, `<iframe>` elements.
+* Animation of `transform` and `opacity` via `Element.animate()`.
+* Animation of `transform` and `opacity` via СSS Transitions and Animations.
+* `position: fixed`.
+* [`will-change`](https://www.w3.org/TR/css-will-change-1/).
+* [`backdrop-filter`](https://drafts.fxtf.org/filters/#FilterProperty).
+
+More reasons are described in [CompositingReasons.h](https://cs.chromium.org/chromium/src/third_party/WebKit/Source/platform/graphics/CompositingReasons.h?q=file:CompositingReasons.h) file of Chromium project.
+
+It seems like the main problem of GPU animations are unexpected heavy repaints. But it’s not. This bigger problem is...
+
+## Memory consumption
+
+Another gentle reminder that GPU is a separate computer. It’s required not just send rendered layer images to GPU, but to *store* them as well for later re-use in animations.
+
+How much memory does a single composite layer takes? Let’s take a simple example. Try to guess how much memory is required to store a 320×240 rectangle, filled with solid `#ff0000` color.
+
+<iframe src="https://sergeche.github.io/gpu-article-assets/examples/rect.html" height="270" frameborder="no" allowtransparency="true" style="width: 100%;"></iframe>
+
+In most cases web-developers will think something like “hm, it’s a solid color image... I’ll save it as PNG and check it’s size, should be less than 1 KB”. And they’re absolutely right: the size of this image in PNG is 104 bytes.
+
+But the problem is that PNG, as well as JPEG, GIF etc., are used to store and transfer image data. In order to draw such image on screen, a computer has to unpack it from given image format and then **represent as array of pixels**. Thus, our sample image will take *320×240×3 = 230 400 bytes* of computer memory. E.g. we multiply image width by its height to get a number of pixels in image. Then we multiply it by 3 since every pixel is described by three bytes: RGB. If the image contains transparent areas, we’ll multiply it by 4 since additional byte is required to describe transparency (RGBA): *320×240×4 = 307 200 bytes*.
+
+Browser *always* paints compositing layers as RGBA images: seems like there’s no easy way to effectively determine whether element contains transparent areas.
+
+Let’s take a more typical example: a carousel of 10 photos with 800×600 size each. You decided to implement a smooth images swap on user interaction, like dragging, so you add `will-change: transform` for every image. This will promote images to composite layers ahead-of-time so swapping transition begin immediately right after user interaction. Now, calculate how much *additional* memory it’s required just to display such carousel: 800×600×4 × 10 ≈ **19 MB**.
+
+19 MB of additional memory is required for rendering of a single control! Assuming that modern web-developers are tend to create web-sites as SPA with lots of animated controls, parallax effects, retina images and other visual stuff, additional 100–200 MB per page is just a beginning. Mix it with implicit compositing (admit it, you haven’t even thought about it before, didn’t you? :) and we’ll end up with a page filling all available memory on device.
+
+Moreover, in many cases this memory is literally wasted just to display the very same result:
+
+<iframe src="https://sergeche.github.io/gpu-article-assets/examples/example5.html#ru" height="620" frameborder="no" allowtransparency="true" style="width: 100%;"></iframe>

@@ -190,6 +190,36 @@ Let’s take a more typical example: a carousel of 10 photos with 800×600 size 
 
 19 MB of additional memory is required for rendering of a single control! Assuming that modern web-developers are tend to create web-sites as SPA with lots of animated controls, parallax effects, retina images and other visual stuff, additional 100–200 MB per page is just a beginning. Mix it with implicit compositing (admit it, you haven’t even thought about it before, didn’t you? :) and we’ll end up with a page filling all available memory on device.
 
-Moreover, in many cases this memory is literally wasted just to display the very same result:
+Moreover, in many cases this memory is just wasted to display the very same result:
 
 <iframe src="https://sergeche.github.io/gpu-article-assets/examples/example5.html#ru" height="620" frameborder="no" allowtransparency="true" style="width: 100%;"></iframe>
+
+It might not be an issue for desktop clients but really hurts mobile users. First, most modern devices are using high-density screens: multiply composite layer images weight by 4—9. Second, mobile devices doesn’t has as much memory as desktops. For example, a not-so-old-yet iPhone 6 ships with 1GB of shared (e.g. used for both RAM and VRAM) memory. Considering that at least one third of this memory is used by OS and background processes, another third by browser and current page (a best case for highly-optimized pages without tons of frameworks), you’ll have about 200—300 MB for GPU effects at most. Note that iPhone 6 is pretty expensive high-end device, more affordable ones contains much less memory on-board.
+
+You may ask: *is it possible to store PNG images in GPU memory to reduce memory footprint?* Yes, technically it’s quite possible, the only problem is that GPU [draws screen pixel-by-pixel](http://www.html5rocks.com/en/tutorials/webgl/shaders/). Which means it has to decode entire PNG image for every pixel again and again. I doubt that animation in this case will be faster that 1 fps.
+
+It’s worth nothing that there are GPU-specific [image compression formats](https://en.wikipedia.org/wiki/Texture_compression) but they are not even close to PNG or JPEG in terms of compression ratio and their usage is limited by hardware support.
+
+## Pros and cons
+
+Now, after we learned some basics of GPU animations, let’s sum-up all the pros and cons of using them.
+
+### Pros
+
+* A very fast and smooth animations at 60 fps.
+* A properly crafted animations works in separate thread and is not blocked by heavy JS calculations.
+* “Cheap” 3D transforms.
+
+### Cons
+
+* Additional repaint is required to promote element to a composite layer. Sometimes this repaint can be very slow (e.g. full layer repaint instead of incremental).
+* Painted layer should be transferred to GPU. Depending on amount and size of these layers, the transfer can be very slow too. This may lead to element “flickering” on low- and mid-end devices.
+* *Every composite layer consumes additional memory.* Memory is a very precious and limited resource on mobile devices. **Excessive memory use may lead to browser crash!**
+* Implicit compositing: if you don’t consider it, chances on slow repaint, extra memory usage and browser crash are very high.
+* Visual artifacts: text rendering in Safari, disappeared or distorted page content in some cases.
+
+As you can see, despite very useful and unique features, GPU animations has some very nasty issues that should be worried about. The most important ones are repaint and excessive memory use so all optimization techniques below will aim on very these problems.
+
+## Browser setup
+
+Before we start with optimization tips, it’s very important to learn about tools that will help you to examine composite layers on page as well as provide clear feedback about optimization efficiency.

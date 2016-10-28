@@ -127,7 +127,7 @@ It might be a surprise for some of you, but GPU is a *separate computer*. That�
 
 To better understand how it works, just think of AJAX. For example, you want to register a user with data he entered in a web form. You can’t tell a remote server “hey, just take data from these input fields and that JS variable and save them into database”. A remote server doesn’t have access to user browser’s memory. Instead, you collect required data from page into a payload with simple data format that can be easily parsed (like JSON) and send it to remote server.
 
-Something very similar happens during compositing. Since GPU is like a remote server, browser has to create a payload first and then send it to device. Yes, GPU isn’t thousands miles away from CPU, it’s just right there, but if 2 seconds required for remote server request/response looks acceptable in many cases, extra 3–5 milliseconds for GPU data transfer will result in janky animations. 
+Something very similar happens during compositing. Since GPU is like a remote server, browser has to create a payload first and then send it to device. Yes, GPU isn’t thousands miles away from CPU, it’s just right there, but if 2 seconds required for remote server request/response looks acceptable in many cases, extra 3–5 milliseconds for GPU data transfer will result in janky animations.
 
 How does GPU payload looks like? In most cases it’s *layer images* and additional instructions like layer size, offset, animation params etc. Here’s how *roughly* the GPU payload making and data transfer looks like:
 
@@ -214,7 +214,7 @@ Now, after we learned some basics of GPU animations, let’s sum-up all the pros
 
 * Additional repaint is required to promote element to a composite layer. Sometimes this repaint can be very slow (e.g. full layer repaint instead of incremental).
 * Painted layer should be transferred to GPU. Depending on amount and size of these layers, the transfer can be very slow too. This may lead to element “flickering” on low- and mid-end devices.
-* *Every composite layer consumes additional memory.* Memory is a very precious and limited resource on mobile devices. **Excessive memory use may lead to browser crash!**
+* *Every composite layer consumes additional memory.* Memory is a very precious and limited resource on mobile devices. **Excessive memory use may crash browser!**
 * Implicit compositing: if you don’t consider it, chances on slow repaint, extra memory usage and browser crash are very high.
 * Visual artifacts: text rendering in Safari, disappeared or distorted page content in some cases.
 
@@ -223,3 +223,58 @@ As you can see, despite very useful and unique features, GPU animations has some
 ## Browser setup
 
 Before we start with optimization tips, it’s very important to learn about tools that will help you to examine composite layers on page as well as provide clear feedback about optimization efficiency.
+
+### Safari
+
+Safari’s Web Inspector has awesome Layers sidebar that displays all child’s composite layers and it’s memory consumption, as well as *compositing reason*. To see this sidebar:
+
+1. In Safari, open Web Inspector with ⌘⌥I. If it doesn’t work, open Preferences > Advanced, turn on *Show Develop Menu in menu bar* option and try again.
+2. When Web Inspector opened, pick Elements tab and select Layers in right sidebar.
+3. Now, when you click on DOM nodes of main Elements’ pane, you’ll see a layer info for selected element (if it uses compositing) and all descendant composite layers.
+4. Click on descendant layer to see its *compositing reason*: it tells you why browser decided to move this element to its own compositing layer.
+
+![Safari with Web Inspector](https://sergeche.github.io/gpu-article-assets/images/safari@2x.png)
+
+### Google Chrome
+
+Chrome’s DevTools also was a similar panel, but you have to enable a special flag first:
+
+1. In Chrome, go to `chrome://flags/#enable-devtools-experiments` enable **Developer Tools experiments** flag.
+2. Open DevTools with ⌘⌥I (Mac) or Ctrl-Shift-I (PC), then click on ![DevTools settings icon](https://sergeche.github.io/gpu-article-assets/images/devtools-icon@2x.png) icon in upper right corner and pick Settings menu item.
+3. Go to Experiments pane and enable Layers panel.
+4. Re-open DevTools: you should see the Layers panel.
+
+![Chrome with DevTools](https://sergeche.github.io/gpu-article-assets/images/chrome@2x.png)
+
+This panel displays all active compositing layers of current page as a tree. If you pick a layer, you’ll see its info like size, memory consumption, repaint count and compositing reason.
+
+## Optimization tips
+
+After we set-up our environment, we can start with compositing layer optimization. We’ve already identified two main problems with compositing: extra repaints, which causes data transfer to GPU as well, and extra memory consumption. So all optimization tips below will focus on very these problems.
+
+### Avoid implicit compositing
+
+The most simple, obvious yet very important tip. Let me remind you that all non-compositing DOM elements above one with explicit compositing reason (`position: fixed`, video, CSS animation etc.) will be forcibly  promoted to their own layers just for correct final image composition on GPU. On mobile devices, it may cause a very slow animation start.
+
+Let’s take a simple example:
+
+<iframe height="305" scrolling="no" src="https://codepen.io/sergeche/embed/jrZZgL/?height=305&theme-id=light&default-tab=result&embed-version=2" frameborder="no" allowtransparency="true" allowfullscreen="true" style="width: 100%;"></iframe>
+
+There’s `A` element that should be animated upon user interaction. If you take look at this page via Layers panel, you’ll see that there’s no extra layers. But right after clicking on the Play button you’ll see a few more layers, which will be removed right after animation ends. If you look at this process via Timeline panel, you’ll see that animation start and end are accompanied with repaints of large areas:
+
+![Chrome timeline](https://sergeche.github.io/gpu-article-assets/images/chrome-timeline@2x.png)
+
+Here’s what browser did, step-by-step:
+
+1. Right after page load, browser didn’t found any reasons for compositing so it picked the most optimal strategy: paint whole page content on a single background layer.
+2. After clicking on Play button, we’ve explicitly added compositing to element `A`: a transition of `transform` property. But browser determined that element `A` in *below* element `B` in stacking order so it promoted `B` to its own compositing layer too (implicit compositing).
+3. Compositing layer promotion always causes repaint: browser has to create a new texture for element itself and remove it from previous layer.
+4. New layer images must be transferred to GPU for final image composition that user will see on screen. *Depending on layers amount, texture size and content complexity, repaint and data transfer could take significant time to perform.* That is why sometimes you can see element “flickering” right on animation start or end.
+5. Right after animation ends, we remove compositing reason from `A` element. Once again browser determined that it’s not necessary to waste resources on compositing so it falls back to most optimal strategy: keep whole page content on a single layer. Which means it has to paint `A` and `B` back on background layer (another repaint) and send updated texture to GPU. Same as in `4.`, this could cause “flickering”.
+
+To get rid of implicit compositing issues and reduce visual artifacts, I recommend you the following:
+
+* Try to keep animated objects as high as possible by `z-index`. Ideally, these elements should be direct children of `<body>` elements. Of course it’s not always possible due to nature of your markup when element is nested deep inside DOM tree and depends on normal flow. In such cases you could clone element to animate and put it inside `<body>` for animation only.
+* You can give browser a hint that you’re going to use compositing with [`will-change`](https://developer.mozilla.org/docs/Web/CSS/will-change) CSS property. With this property set on element, browser will (but not always!) promote it to compositing layer in advance so animations can start and stop smoothly. But it’s very important to not misuse this property: otherwise you’ll end up with a tremendous increase in memory consumption.
+
+### Animate `transform` and `opacity` properties only

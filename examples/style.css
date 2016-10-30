@@ -165,6 +165,7 @@ html, body {
     font-size: 11px;
     line-height: 1.4;
     color: #2e7ea7;
+    transform: translateZ(100px); /* Fix artifacts in Safari 10 */
 }
 
 .question {

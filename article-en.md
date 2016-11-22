@@ -12,7 +12,7 @@ The most important thing I’d like to tell you before we dive deep into GPU com
 
 To prepare you page for GPU animations properly, it’s very important to clearly understand how things works in browser, not just follow some random advices found in the internet or this article.
 
-Let’s say we have a page with `A` and `B` elements, each with `position: absolute` and different `z-index`. Browser will paint it on CPU, then send resulting image GPU, which will display it on screen afterwards.
+Let’s say we have a page with `A` and `B` elements, each with `position: absolute` and different `z-index`. Browser will paint it on CPU, then send resulting image to the GPU, which will display it on screen afterwards.
 
 ```html
 <style>

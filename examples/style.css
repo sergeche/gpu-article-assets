@@ -6,8 +6,8 @@ html, body {
 }
 
 .viewport {
-    width: 200px;
-    height: 270px;
+    width: 165px;
+    height: 250px;
     float: left;
     position: relative;
     margin-left: 30px;
@@ -18,7 +18,7 @@ html, body {
 }
 
 .viewport-flat {
-    margin-left: 60px;
+    left: 35px;
 }
 
 .scene3d {
@@ -201,10 +201,10 @@ html, body {
 
 @keyframes anim-left {
     from { left: 30px; }
-    to { left: 100px; }
+    to { left: 80px; }
 }
 
 @keyframes anim-translate {
     from { transform: translateX(0); }
-    to { transform: translateX(70px); }
+    to { transform: translateX(50px); }
 }
